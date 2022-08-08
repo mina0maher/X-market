@@ -9,4 +9,6 @@
     <string name="name">Name</string>
     <string name="confirm_password">Confirm Password</string>
     <string name="sing_up">Sing Up</string>
+    <string name="market_icon">market icon</string>
+    <string name="log_out">log out</string>
 </resources>
