@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.navigation.Navigation
@@ -21,36 +22,20 @@ class LoginFragment : BaseFragment() {
     private lateinit var progressBar: ProgressBar
     private lateinit var inputEmail: EditText
     private lateinit var inputPassword: EditText
-    private lateinit var preferenceManager: PreferenceManager//todo:initialize this
+    private lateinit var textCreateNewAccount:TextView
+    private lateinit var preferenceManager: PreferenceManager
     private val apiViewModel:ApiViewModel by viewModels()
     override fun init() {
 
         buttonSignIn.setOnClickListener {
             loading(true)
-            if(isOnline(requireActivity())){
-                if(isValidSignInDetails()){
-                    signIn()
-                }
-            }else{
-                val builder = AlertDialog.Builder(requireActivity())
-                builder.setTitle("Error")
-                builder.setMessage("check your internet connection and try again")
-                builder.setCancelable(true)
-                builder.setIcon(R.drawable.ic_no_internet)
-                builder.setPositiveButton("reload") { _, _ ->
-                    signIn()
-                    loading(false)
-                }
 
-                builder.setNegativeButton("exit") { _, _ ->
-                    requireActivity().finish()
-                    loading(false)
-                }
-                builder.setOnCancelListener { loading(false) }
-
-
-                builder.show()
+            if (isValidSignInDetails()) {
+                signIn()
             }
+        }
+        textCreateNewAccount.setOnClickListener {
+            Navigation.findNavController(requireView()).navigate(R.id.action_loginFragment_to_registerFragment)
         }
     }
 
@@ -61,6 +46,7 @@ class LoginFragment : BaseFragment() {
     }
 
     private fun signIn(){
+        if(isOnline(requireActivity())){
         apiViewModel.signIn(UserSignInModel(inputEmail.text.toString(),inputPassword.text.toString()))
             apiViewModel.codesLiveData.observe(requireActivity()) {
                 when (it) {
@@ -86,6 +72,27 @@ class LoginFragment : BaseFragment() {
             showToast(it,requireContext())
             loading(false)
         }
+        }else{
+            val builder = AlertDialog.Builder(requireActivity())
+            builder.setTitle("Error")
+            builder.setMessage("check your internet connection and try again")
+            builder.setCancelable(true)
+            builder.setIcon(R.drawable.ic_no_internet)
+            builder.setPositiveButton("reload") { _, _ ->
+                signIn()
+                loading(false)
+            }
+
+            builder.setNegativeButton("exit") { _, _ ->
+                requireActivity().finish()
+                loading(false)
+            }
+            builder.setOnCancelListener { loading(false) }
+
+
+            builder.show()
+        }
+
 
     }
 
@@ -95,6 +102,7 @@ class LoginFragment : BaseFragment() {
         inputEmail = view.findViewById(R.id.inputEmail)
         inputPassword = view.findViewById(R.id.inputPassword)
         progressBar = view.findViewById(R.id.progressBar)
+        textCreateNewAccount=view.findViewById(R.id.textCreateNewAccount)
     }
 
     override fun getViewId(): Int =R.layout.fragment_login
