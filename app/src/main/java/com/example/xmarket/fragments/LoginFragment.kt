@@ -1,5 +1,6 @@
 package com.example.xmarket.fragments
 
+import android.content.Intent
 import android.util.Patterns
 import android.view.View
 import android.widget.Button
@@ -26,12 +27,16 @@ class LoginFragment : BaseFragment() {
     private lateinit var preferenceManager: PreferenceManager
     private val apiViewModel:ApiViewModel by viewModels()
     override fun init() {
-
+        if(preferenceManager.getBoolean(Constants.KEY_IS_SIGNED_IN)){
+            Navigation.findNavController(requireView()).navigate(R.id.action_loginFragment_to_homeFragment)
+        }
         buttonSignIn.setOnClickListener {
             loading(true)
 
             if (isValidSignInDetails()) {
                 signIn()
+            }else{
+                loading(false)
             }
         }
         textCreateNewAccount.setOnClickListener {
@@ -53,6 +58,7 @@ class LoginFragment : BaseFragment() {
                     200 -> {
                         preferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN, true)
                         Navigation.findNavController(requireView()).navigate(R.id.action_loginFragment_to_homeFragment)
+                        loading(false)
                     }
                     422 -> {
                         showToast("email & password not correct",requireActivity())
@@ -98,6 +104,7 @@ class LoginFragment : BaseFragment() {
 
     override fun initViews(view: View) {
         preferenceManager = PreferenceManager(requireActivity())
+
         buttonSignIn = view.findViewById(R.id.buttonSignIn)
         inputEmail = view.findViewById(R.id.inputEmail)
         inputPassword = view.findViewById(R.id.inputPassword)
@@ -106,6 +113,12 @@ class LoginFragment : BaseFragment() {
     }
 
     override fun getViewId(): Int =R.layout.fragment_login
+
+    override fun onDestroy() {
+        super.onDestroy()
+        inputEmail.setText("")
+        inputPassword.setText("")
+    }
 
     private fun isValidSignInDetails():Boolean
     {
