@@ -1,5 +1,6 @@
 package com.example.xmarket.fragments
 
+import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
@@ -13,9 +14,11 @@ import com.example.xmarket.R
 import com.example.xmarket.adapters.ProductsAdapter
 import com.example.xmarket.interfaces.ProductsListener
 import com.example.xmarket.models.ProductsModel
+import com.example.xmarket.utilities.Constants.KEY_HOME_SAVED_INSTANCE
 import com.example.xmarket.utilities.Constants.isOnline
 import com.example.xmarket.utilities.PreferenceManager
 import com.example.xmarket.viewmodles.ApiViewModel
+import com.google.gson.Gson
 
 
 class HomeFragment : BaseFragment() ,ProductsListener{
@@ -24,16 +27,29 @@ class HomeFragment : BaseFragment() ,ProductsListener{
     private lateinit var productsAdapter: ProductsAdapter
     private lateinit var productsLayout : ConstraintLayout
     private lateinit var progressBar: ProgressBar
-    private lateinit var data : ProductsModel
+    private var data : ProductsModel? = null
     private lateinit var logoutImage: ImageView
+    private var canStart :Boolean =true
     private val apiViewModel: ApiViewModel by viewModels()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if(savedInstanceState!=null){
+            data = Gson().fromJson(savedInstanceState.getString(KEY_HOME_SAVED_INSTANCE),ProductsModel::class.java)
+        }
+    }
     override fun init() {
-        getData()
+        if(data == null){
+            getData()
+        }else{
+            installRecycler()
+            loading(false)
+        }
         apiViewModel.productsLiveData.observe(requireActivity()){
             data = it
             installRecycler()
             loading(false)
         }
+
         apiViewModel.errorMessageLiveData.observe(requireActivity()){
             val builder = AlertDialog.Builder(requireActivity())
             builder.setTitle("Error")
@@ -47,8 +63,6 @@ class HomeFragment : BaseFragment() ,ProductsListener{
             builder.setNegativeButton("exit") { _, _ ->
                 requireActivity().finish()
             }
-
-
             builder.show()
         }
         logoutImage.setOnClickListener {
@@ -56,6 +70,12 @@ class HomeFragment : BaseFragment() ,ProductsListener{
             preferenceManager.clear()
             Navigation.findNavController(requireView()).navigate(R.id.action_homeFragment_to_loginFragment)
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        apiViewModel.productsLiveData.removeObservers(requireActivity())
+        apiViewModel.errorMessageLiveData.removeObservers(requireActivity())
     }
     private fun getData(){
         if(isOnline(requireActivity())){
@@ -92,7 +112,7 @@ class HomeFragment : BaseFragment() ,ProductsListener{
     private fun installRecycler(){
         layoutManager = GridLayoutManager(requireActivity(),2)
         productsRecycler.layoutManager = layoutManager
-        productsAdapter = ProductsAdapter(data.data,requireActivity(),this)
+        productsAdapter = ProductsAdapter(data!!.data,requireActivity(),this)
         productsRecycler.adapter = productsAdapter
     }
     private fun loading(isLoading: Boolean) {
@@ -105,8 +125,36 @@ class HomeFragment : BaseFragment() ,ProductsListener{
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        canStart =true
+    }
+
     override fun onProductClicked(position: Int, productImage: ImageView) {
-        //TODO("Not yet implemented")
+        val isOnline = isOnline(requireActivity())
+        if(isOnline&&canStart){
+            canStart=false
+            Navigation.findNavController(requireView()).navigate(R.id.action_homeFragment_to_productFragment)
+        }else if(!isOnline){
+            val builder = AlertDialog.Builder(requireActivity())
+            builder.setTitle("Error")
+            builder.setMessage("please check your internet connection")
+            builder.setCancelable(true)
+            builder.setIcon(R.drawable.ic_no_internet)
+            builder.setPositiveButton("cancel") { _, _ ->
+                return@setPositiveButton
+            }
+
+            builder.setNegativeButton("exit") { _, _ ->
+                requireActivity().finish()
+            }
+            builder.show()
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(KEY_HOME_SAVED_INSTANCE,Gson().toJson( data))
     }
 
 }
