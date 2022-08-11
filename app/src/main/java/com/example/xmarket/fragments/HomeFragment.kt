@@ -134,7 +134,8 @@ class HomeFragment : BaseFragment() ,ProductsListener{
         val isOnline = isOnline(requireActivity())
         if(isOnline&&canStart){
             canStart=false
-            Navigation.findNavController(requireView()).navigate(R.id.action_homeFragment_to_productFragment)
+            val action = HomeFragmentDirections.actionHomeFragmentToProductFragment(position)
+            Navigation.findNavController(requireView()).navigate(action)
         }else if(!isOnline){
             val builder = AlertDialog.Builder(requireActivity())
             builder.setTitle("Error")
