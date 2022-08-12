@@ -39,38 +39,7 @@ class HomeFragment : BaseFragment() ,ProductsListener{
         }
     }
     override fun init() {
-        if(data == null){
-            getData()
-        }else{
-            installRecycler()
-            loading(false)
-        }
-        apiViewModel.productsLiveData.observe(requireActivity()){
-            data = it
-            installRecycler()
-            loading(false)
-        }
 
-        apiViewModel.errorMessageLiveData.observe(requireActivity()){
-            val builder = AlertDialog.Builder(requireActivity())
-            builder.setTitle("Error")
-            builder.setMessage("$it \n do you want try again?")
-            builder.setCancelable(false)
-            builder.setIcon(R.drawable.ic_no_internet)
-            builder.setPositiveButton("reload") { _, _ ->
-                getData()
-            }
-
-            builder.setNegativeButton("exit") { _, _ ->
-                requireActivity().finish()
-            }
-            builder.show()
-        }
-        logoutImage.setOnClickListener {
-            val preferenceManager = PreferenceManager(requireActivity())
-            preferenceManager.clear()
-            Navigation.findNavController(requireView()).navigate(R.id.action_homeFragment_to_loginFragment)
-        }
     }
 
     override fun onPause() {
@@ -129,6 +98,38 @@ class HomeFragment : BaseFragment() ,ProductsListener{
     override fun onResume() {
         super.onResume()
         canStart =true
+        if(data == null){
+            getData()
+        }else{
+            installRecycler()
+            loading(false)
+        }
+        apiViewModel.productsLiveData.observe(requireActivity()){
+            data = it
+            installRecycler()
+            loading(false)
+        }
+
+        apiViewModel.errorMessageLiveData.observe(requireActivity()){
+            val builder = AlertDialog.Builder(requireActivity())
+            builder.setTitle("Error")
+            builder.setMessage("$it \n do you want try again?")
+            builder.setCancelable(false)
+            builder.setIcon(R.drawable.ic_no_internet)
+            builder.setPositiveButton("reload") { _, _ ->
+                getData()
+            }
+
+            builder.setNegativeButton("exit") { _, _ ->
+                requireActivity().finish()
+            }
+            builder.show()
+        }
+        logoutImage.setOnClickListener {
+            val preferenceManager = PreferenceManager(requireActivity())
+            preferenceManager.clear()
+            Navigation.findNavController(requireView()).navigate(R.id.action_homeFragment_to_loginFragment)
+        }
     }
 
     override fun onProductClicked(position: Int, productImage: ImageView) {
@@ -157,7 +158,9 @@ class HomeFragment : BaseFragment() ,ProductsListener{
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString(KEY_HOME_SAVED_INSTANCE,Gson().toJson( data))
+        if(data!=null) {
+            outState.putString(KEY_HOME_SAVED_INSTANCE, Gson().toJson(data))
+        }
     }
 
 }

@@ -12,6 +12,7 @@ object Constants {
     const val KEY_PRODUCT_ID="productId"
     const val KEY_PREFERENCE_NAME = "chatAppPreference"
     const val KEY_HOME_SAVED_INSTANCE = "homeSavedInstance"
+    const val KEY_PRODUCT_SAVED_INSTANCE = "productSavedInstance"
     private var toast: Toast? = null
      fun showToast(message: String,context: Context) {
         if(toast !=null){

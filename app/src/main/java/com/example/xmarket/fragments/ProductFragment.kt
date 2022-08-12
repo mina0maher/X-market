@@ -7,11 +7,13 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
-import androidx.transition.ChangeBounds
 import androidx.transition.TransitionInflater
 import com.bumptech.glide.Glide
 import com.example.xmarket.R
+import com.example.xmarket.models.ProductData
+import com.example.xmarket.utilities.Constants.KEY_PRODUCT_SAVED_INSTANCE
 import com.example.xmarket.viewmodles.ApiViewModel
+import com.google.gson.Gson
 import de.hdodenhof.circleimageview.CircleImageView
 
 
@@ -23,6 +25,7 @@ class ProductFragment : BaseFragment() {
     private lateinit var priceProgressBar: ProgressBar
     private val args:ProductFragmentArgs by navArgs()
     private val apiViewModel: ApiViewModel by viewModels()
+    private var data : ProductData? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val animation = TransitionInflater.from(requireContext()).inflateTransition(
@@ -30,38 +33,54 @@ class ProductFragment : BaseFragment() {
         )
         sharedElementEnterTransition = animation
         sharedElementReturnTransition = animation
+        if(savedInstanceState!=null){
+            data = Gson().fromJson(savedInstanceState.getString(KEY_PRODUCT_SAVED_INSTANCE),ProductData::class.java)
+        }
     }
 
-    override fun init() {
-        apiViewModel.getProductData(args.productId)
+    override fun onResume() {
+        super.onResume()
+        if (data == null) {
+            apiViewModel.getProductData(args.productId)
+        }else{
+            productName.text = data!!.name
+            val price = "${data!!.price} $"
+            productPrice.text = price
+            Glide.with(View(requireActivity())).load(data!!.image).into(productImage)
+            loading(false)
+        }
         apiViewModel.productLiveData.observe(requireActivity()){
-
-                productName.text = it.data.name
-                val price = "${it.data.price} $"
-                productPrice.text = price
-                Glide.with(View(requireActivity())).load(it.data.image).into(productImage)
-                loading(false)
+            data=it.data
+            productName.text = it.data.name
+            val price = "${it.data.price} $"
+            productPrice.text = price
+            Glide.with(View(requireActivity())).load(it.data.image).into(productImage)
+            loading(false)
 
         }
         apiViewModel.errorMessageLiveData.observe(requireActivity()){
 
-                val builder = AlertDialog.Builder(requireActivity())
-                builder.setTitle("Error")
-                builder.setMessage("$it do you want to try again ?")
-                builder.setCancelable(false)
-                builder.setIcon(R.drawable.ic_no_internet)
-                builder.setPositiveButton("reload") { _, _ ->
-                    Thread{apiViewModel.getProductData(args.productId)}.start()
-                }
+            val builder = AlertDialog.Builder(requireActivity())
+            builder.setTitle("Error")
+            builder.setMessage("$it do you want to try again ?")
+            builder.setCancelable(false)
+            builder.setIcon(R.drawable.ic_no_internet)
+            builder.setPositiveButton("reload") { _, _ ->
+                Thread{apiViewModel.getProductData(args.productId)}.start()
+            }
 
-                builder.setNegativeButton("exit") { _, _ ->
-                    requireActivity().finish()
-                }
+            builder.setNegativeButton("exit") { _, _ ->
+                requireActivity().finish()
+            }
 
 
-                builder.show()
+            builder.show()
 
         }
+    }
+
+    override fun init() {
+
     }
 
     override fun initViews(view:View) {
@@ -92,5 +111,12 @@ class ProductFragment : BaseFragment() {
         super.onPause()
         apiViewModel.productLiveData.removeObservers(requireActivity())
         apiViewModel.errorMessageLiveData.removeObservers(requireActivity())
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if(data!=null) {
+            outState.putString(KEY_PRODUCT_SAVED_INSTANCE, Gson().toJson(data))
+        }
     }
 }
