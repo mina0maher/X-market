@@ -65,7 +65,6 @@ class ProductFragment : BaseFragment() {
     }
 
     override fun initViews(view:View) {
-        sharedElementEnterTransition= (ChangeBounds())
         productName=view.findViewById(R.id.item_name)
         productPrice=view.findViewById(R.id.item_price)
         productImage=view.findViewById(R.id.item_image)
@@ -87,5 +86,11 @@ class ProductFragment : BaseFragment() {
             priceProgressBar.visibility=View.INVISIBLE
             productPrice.visibility=View.VISIBLE
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        apiViewModel.productLiveData.removeObservers(requireActivity())
+        apiViewModel.errorMessageLiveData.removeObservers(requireActivity())
     }
 }

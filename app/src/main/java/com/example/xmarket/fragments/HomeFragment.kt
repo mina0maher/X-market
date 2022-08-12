@@ -8,11 +8,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.viewModels
 import androidx.navigation.Navigation
-import androidx.navigation.fragment.FragmentNavigator
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.transition.TransitionInflater
 import com.example.xmarket.R
 import com.example.xmarket.adapters.ProductsAdapter
 import com.example.xmarket.interfaces.ProductsListener
@@ -116,6 +114,7 @@ class HomeFragment : BaseFragment() ,ProductsListener{
         productsRecycler.layoutManager = layoutManager
         productsAdapter = ProductsAdapter(data!!.data,requireActivity(),this)
         productsRecycler.adapter = productsAdapter
+
     }
     private fun loading(isLoading: Boolean) {
         if (isLoading) {
