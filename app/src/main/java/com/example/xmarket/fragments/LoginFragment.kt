@@ -1,6 +1,7 @@
 package com.example.xmarket.fragments
 
 import android.content.Intent
+import android.os.Bundle
 import android.util.Patterns
 import android.view.View
 import android.widget.Button
@@ -13,6 +14,7 @@ import androidx.navigation.Navigation
 import com.example.xmarket.R
 import com.example.xmarket.models.UserSignInModel
 import com.example.xmarket.utilities.Constants
+import com.example.xmarket.utilities.Constants.KEY_IS_LOGIN_CLICKED
 import com.example.xmarket.utilities.Constants.isOnline
 import com.example.xmarket.utilities.Constants.showToast
 import com.example.xmarket.utilities.PreferenceManager
@@ -26,13 +28,16 @@ class LoginFragment : BaseFragment() {
     private lateinit var textCreateNewAccount:TextView
     private lateinit var preferenceManager: PreferenceManager
     private val apiViewModel:ApiViewModel by viewModels()
+    private var isLoginClicked = false
     override fun init() {
         if(preferenceManager.getBoolean(Constants.KEY_IS_SIGNED_IN)){
             Navigation.findNavController(requireView()).navigate(R.id.action_loginFragment_to_homeFragment)
         }
+        if(isLoginClicked){
+            signIn()
+        }
         buttonSignIn.setOnClickListener {
             loading(true)
-
             if (isValidSignInDetails()) {
                 signIn()
             }else{
@@ -44,14 +49,24 @@ class LoginFragment : BaseFragment() {
         }
     }
 
-    override fun onPause() {
-        super.onPause()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if(savedInstanceState!=null){
+            isLoginClicked = savedInstanceState.getBoolean(KEY_IS_LOGIN_CLICKED)
+        }
+    }
+
+
+
+    override fun onDetach() {
+        super.onDetach()
         apiViewModel.codesLiveData.removeObservers(requireActivity())
         apiViewModel.errorMessageLiveData.removeObservers(requireActivity())
     }
 
     private fun signIn(){
         if(isOnline(requireActivity())){
+            isLoginClicked = true
         apiViewModel.signIn(UserSignInModel(inputEmail.text.toString(),inputPassword.text.toString()))
             apiViewModel.codesLiveData.observe(requireActivity()) {
                 when (it) {
@@ -63,14 +78,17 @@ class LoginFragment : BaseFragment() {
                     422 -> {
                         showToast("email & password not correct",requireActivity())
                         loading(false)
+                        isLoginClicked=false
                     }
                     401 -> {
                         showToast("password not correct",requireActivity())
                         loading(false)
+                        isLoginClicked=false
                     }
                     else -> {
                         showToast("error $it",requireActivity())
                         loading(false)
+                        isLoginClicked=false
                     }
                 }
             }
@@ -145,5 +163,10 @@ class LoginFragment : BaseFragment() {
             progressBar.visibility = View.INVISIBLE
             buttonSignIn.visibility = View.VISIBLE
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(KEY_IS_LOGIN_CLICKED,isLoginClicked)
     }
 }
