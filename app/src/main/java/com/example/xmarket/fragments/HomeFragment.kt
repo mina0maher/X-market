@@ -8,8 +8,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.viewModels
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.FragmentNavigator
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.transition.TransitionInflater
 import com.example.xmarket.R
 import com.example.xmarket.adapters.ProductsAdapter
 import com.example.xmarket.interfaces.ProductsListener
@@ -99,7 +102,6 @@ class HomeFragment : BaseFragment() ,ProductsListener{
         }
     }
 
-
     override fun initViews(view: View) {
         productsRecycler=view.findViewById(R.id.products_recycler)
         progressBar = view.findViewById(R.id.progress_bar)
@@ -135,7 +137,8 @@ class HomeFragment : BaseFragment() ,ProductsListener{
         if(isOnline&&canStart){
             canStart=false
             val action = HomeFragmentDirections.actionHomeFragmentToProductFragment(position)
-            Navigation.findNavController(requireView()).navigate(action)
+            val extras = FragmentNavigatorExtras(productImage to "example_transition")
+            Navigation.findNavController(requireView()).navigate(action,extras)
         }else if(!isOnline){
             val builder = AlertDialog.Builder(requireActivity())
             builder.setTitle("Error")
