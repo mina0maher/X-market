@@ -12,6 +12,7 @@ import com.bumptech.glide.Glide
 import com.example.xmarket.R
 import com.example.xmarket.models.ProductData
 import com.example.xmarket.utilities.Constants.KEY_PRODUCT_SAVED_INSTANCE
+import com.example.xmarket.utilities.Constants.isOnline
 import com.example.xmarket.viewmodles.ApiViewModel
 import com.google.gson.Gson
 import de.hdodenhof.circleimageview.CircleImageView
@@ -41,7 +42,7 @@ class ProductFragment : BaseFragment() {
     override fun onResume() {
         super.onResume()
         if (data == null) {
-            apiViewModel.getProductData(args.productId)
+            getData()
         }else{
             productName.text = data!!.name
             val price = "${data!!.price} $"
@@ -76,6 +77,27 @@ class ProductFragment : BaseFragment() {
 
             builder.show()
 
+        }
+    }
+    private fun getData(){
+        if(isOnline(requireContext())){
+            apiViewModel.getProductData(args.productId)
+        }else{
+            val builder = AlertDialog.Builder(requireActivity())
+            builder.setTitle("Error")
+            builder.setMessage("please check your internet connection and try again")
+            builder.setCancelable(false)
+            builder.setIcon(R.drawable.ic_no_internet)
+            builder.setPositiveButton("reload") { _, _ ->
+                getData()
+            }
+
+            builder.setNegativeButton("exit") { _, _ ->
+                requireActivity().finish()
+            }
+
+
+            builder.show()
         }
     }
 

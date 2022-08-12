@@ -6,6 +6,7 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.viewModels
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.FragmentNavigatorExtras
@@ -16,7 +17,9 @@ import com.example.xmarket.adapters.ProductsAdapter
 import com.example.xmarket.interfaces.ProductsListener
 import com.example.xmarket.models.ProductsModel
 import com.example.xmarket.utilities.Constants.KEY_HOME_SAVED_INSTANCE
+import com.example.xmarket.utilities.Constants.KEY_RECYCLER_SAVED_INSTANCE
 import com.example.xmarket.utilities.Constants.isOnline
+import com.example.xmarket.utilities.Constants.showToast
 import com.example.xmarket.utilities.PreferenceManager
 import com.example.xmarket.viewmodles.ApiViewModel
 import com.google.gson.Gson
@@ -28,14 +31,17 @@ class HomeFragment : BaseFragment() ,ProductsListener{
     private lateinit var productsAdapter: ProductsAdapter
     private lateinit var productsLayout : ConstraintLayout
     private lateinit var progressBar: ProgressBar
+    private lateinit var nestedScrollView:NestedScrollView
     private var data : ProductsModel? = null
     private lateinit var logoutImage: ImageView
     private var canStart :Boolean =true
     private val apiViewModel: ApiViewModel by viewModels()
+    private var position = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if(savedInstanceState!=null){
             data = Gson().fromJson(savedInstanceState.getString(KEY_HOME_SAVED_INSTANCE),ProductsModel::class.java)
+            position = savedInstanceState.getInt(KEY_RECYCLER_SAVED_INSTANCE)
         }
     }
     override fun init() {
@@ -74,6 +80,7 @@ class HomeFragment : BaseFragment() ,ProductsListener{
         progressBar = view.findViewById(R.id.progress_bar)
         productsLayout = view.findViewById(R.id.products_layout)
         logoutImage = view.findViewById(R.id.logout)
+        nestedScrollView = view.findViewById(R.id.nestedScrollView)
     }
 
     override fun getViewId(): Int = R.layout.fragment_home
@@ -83,7 +90,7 @@ class HomeFragment : BaseFragment() ,ProductsListener{
         productsRecycler.layoutManager = layoutManager
         productsAdapter = ProductsAdapter(data!!.data,requireActivity(),this)
         productsRecycler.adapter = productsAdapter
-
+        nestedScrollView.scrollY=position
     }
     private fun loading(isLoading: Boolean) {
         if (isLoading) {
@@ -160,6 +167,7 @@ class HomeFragment : BaseFragment() ,ProductsListener{
         super.onSaveInstanceState(outState)
         if(data!=null) {
             outState.putString(KEY_HOME_SAVED_INSTANCE, Gson().toJson(data))
+            outState.putInt(KEY_RECYCLER_SAVED_INSTANCE,nestedScrollView.scrollY)
         }
     }
 
