@@ -10,7 +10,7 @@ import retrofit2.http.Path
 interface ApiInterface {
 
     @POST("sign_up")
-    fun signUp(@Body userSignUpModel: UserSignUpModel)//TODO:call back model
+    fun signUp(@Body userSignUpModel: UserSignUpModel):Call<SignUpResponseModel>
 
     @POST("login")
     fun logIn(@Body userSignInModel: UserSignInModel): Call<SignInResponseModel>

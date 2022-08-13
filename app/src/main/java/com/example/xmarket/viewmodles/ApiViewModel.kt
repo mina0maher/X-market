@@ -4,10 +4,7 @@ package com.example.xmarket.viewmodles
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.example.xmarket.apis.RetrofitFactory
-import com.example.xmarket.models.ProductModel
-import com.example.xmarket.models.ProductsModel
-import com.example.xmarket.models.SignInResponseModel
-import com.example.xmarket.models.UserSignInModel
+import com.example.xmarket.models.*
 import retrofit2.Call
 import retrofit2.Response
 
@@ -32,6 +29,10 @@ class ApiViewModel : ViewModel() {
     var errorMessageMD: SingleLiveEvent<String> = SingleLiveEvent()
     val errorMessageLiveData:LiveData<String>
         get() = errorMessageMD
+
+    var signInBodyMD: SingleLiveEvent<SignUpResponseModel> = SingleLiveEvent()
+    val signInBodyLiveData:LiveData<SignUpResponseModel>
+        get() = signInBodyMD
 
     fun signIn(userSignInModel: UserSignInModel){
          RetrofitFactory.apiInterface().logIn(userSignInModel)
@@ -75,6 +76,22 @@ class ApiViewModel : ViewModel() {
 
             })
 
+    }
+    fun signUp(userSignUpModel: UserSignUpModel){
+        RetrofitFactory.apiInterface().signUp(userSignUpModel)
+            .enqueue(object :retrofit2.Callback<SignUpResponseModel>{
+                override fun onResponse(
+                    call: Call<SignUpResponseModel>,
+                    response: Response<SignUpResponseModel>
+                ) {
+                    codesMD.postValue(response.code())
+                    signInBodyMD.postValue(response.body())
+                }
+                override fun onFailure(call: Call<SignUpResponseModel>, t: Throwable) {
+                    errorMessageMD.postValue(t.message.toString())
+                }
+
+            })
     }
 }
 
