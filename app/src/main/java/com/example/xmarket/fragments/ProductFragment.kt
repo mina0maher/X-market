@@ -39,8 +39,30 @@ class ProductFragment : BaseFragment() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
+
+    private fun getData(){
+        if(isOnline(requireContext())){
+            apiViewModel.getProductData(args.productId)
+        }else{
+            val builder = AlertDialog.Builder(requireActivity())
+            builder.setTitle("Error")
+            builder.setMessage("please check your internet connection and try again")
+            builder.setCancelable(false)
+            builder.setIcon(R.drawable.ic_no_internet)
+            builder.setPositiveButton("reload") { _, _ ->
+                getData()
+            }
+
+            builder.setNegativeButton("exit") { _, _ ->
+                requireActivity().finish()
+            }
+
+
+            builder.show()
+        }
+    }
+
+    override fun init() {
         if (data == null) {
             getData()
         }else{
@@ -79,31 +101,6 @@ class ProductFragment : BaseFragment() {
 
         }
     }
-    private fun getData(){
-        if(isOnline(requireContext())){
-            apiViewModel.getProductData(args.productId)
-        }else{
-            val builder = AlertDialog.Builder(requireActivity())
-            builder.setTitle("Error")
-            builder.setMessage("please check your internet connection and try again")
-            builder.setCancelable(false)
-            builder.setIcon(R.drawable.ic_no_internet)
-            builder.setPositiveButton("reload") { _, _ ->
-                getData()
-            }
-
-            builder.setNegativeButton("exit") { _, _ ->
-                requireActivity().finish()
-            }
-
-
-            builder.show()
-        }
-    }
-
-    override fun init() {
-
-    }
 
     override fun initViews(view:View) {
         productName=view.findViewById(R.id.item_name)
@@ -129,8 +126,8 @@ class ProductFragment : BaseFragment() {
         }
     }
 
-    override fun onPause() {
-        super.onPause()
+    override fun onDestroy() {
+        super.onDestroy()
         apiViewModel.productLiveData.removeObservers(requireActivity())
         apiViewModel.errorMessageLiveData.removeObservers(requireActivity())
     }

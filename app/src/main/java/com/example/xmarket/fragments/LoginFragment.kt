@@ -58,11 +58,8 @@ class LoginFragment : BaseFragment() {
 
 
 
-    override fun onDetach() {
-        super.onDetach()
-        apiViewModel.codesLiveData.removeObservers(requireActivity())
-        apiViewModel.errorMessageLiveData.removeObservers(requireActivity())
-    }
+
+
 
     private fun signIn(){
         if(isOnline(requireActivity())){
@@ -136,6 +133,8 @@ class LoginFragment : BaseFragment() {
         super.onDestroy()
         inputEmail.setText("")
         inputPassword.setText("")
+        apiViewModel.codesLiveData.removeObservers(requireActivity())
+        apiViewModel.errorMessageLiveData.removeObservers(requireActivity())
     }
 
     private fun isValidSignInDetails():Boolean

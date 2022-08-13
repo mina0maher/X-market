@@ -46,13 +46,51 @@ class HomeFragment : BaseFragment() ,ProductsListener{
     }
     override fun init() {
 
+        if(data == null){
+            getData()
+        }else{
+            installRecycler()
+            loading(false)
+        }
+        apiViewModel.productsLiveData.observe(requireActivity()){
+            data = it
+            installRecycler()
+            loading(false)
+        }
+
+        apiViewModel.errorMessageLiveData.observe(requireActivity()){
+            val builder = AlertDialog.Builder(requireActivity())
+            builder.setTitle("Error")
+            builder.setMessage("$it \n do you want try again?")
+            builder.setCancelable(false)
+            builder.setIcon(R.drawable.ic_no_internet)
+            builder.setPositiveButton("reload") { _, _ ->
+                getData()
+            }
+
+            builder.setNegativeButton("exit") { _, _ ->
+                requireActivity().finish()
+            }
+            builder.show()
+        }
+        logoutImage.setOnClickListener {
+            val preferenceManager = PreferenceManager(requireActivity())
+            preferenceManager.clear()
+            Navigation.findNavController(requireView()).navigate(R.id.action_homeFragment_to_loginFragment)
+        }
     }
 
-    override fun onPause() {
-        super.onPause()
+    override fun onDestroy() {
+        super.onDestroy()
         apiViewModel.productsLiveData.removeObservers(requireActivity())
         apiViewModel.errorMessageLiveData.removeObservers(requireActivity())
     }
+
+    override fun onResume() {
+        super.onResume()
+        canStart =true
+    }
+
     private fun getData(){
         if(isOnline(requireActivity())){
             apiViewModel.getProductsData()
@@ -102,42 +140,6 @@ class HomeFragment : BaseFragment() ,ProductsListener{
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        canStart =true
-        if(data == null){
-            getData()
-        }else{
-            installRecycler()
-            loading(false)
-        }
-        apiViewModel.productsLiveData.observe(requireActivity()){
-            data = it
-            installRecycler()
-            loading(false)
-        }
-
-        apiViewModel.errorMessageLiveData.observe(requireActivity()){
-            val builder = AlertDialog.Builder(requireActivity())
-            builder.setTitle("Error")
-            builder.setMessage("$it \n do you want try again?")
-            builder.setCancelable(false)
-            builder.setIcon(R.drawable.ic_no_internet)
-            builder.setPositiveButton("reload") { _, _ ->
-                getData()
-            }
-
-            builder.setNegativeButton("exit") { _, _ ->
-                requireActivity().finish()
-            }
-            builder.show()
-        }
-        logoutImage.setOnClickListener {
-            val preferenceManager = PreferenceManager(requireActivity())
-            preferenceManager.clear()
-            Navigation.findNavController(requireView()).navigate(R.id.action_homeFragment_to_loginFragment)
-        }
-    }
 
     override fun onProductClicked(position: Int, productImage: ImageView) {
         val isOnline = isOnline(requireActivity())
