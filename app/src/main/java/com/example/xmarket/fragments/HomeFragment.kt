@@ -18,9 +18,11 @@ import com.example.xmarket.interfaces.ProductsListener
 import com.example.xmarket.models.ProductsModel
 import com.example.xmarket.utilities.Constants.KEY_HOME_SAVED_INSTANCE
 import com.example.xmarket.utilities.Constants.KEY_RECYCLER_SAVED_INSTANCE
+import com.example.xmarket.utilities.Constants.KEY_USER_NAME
 import com.example.xmarket.utilities.Constants.isOnline
 import com.example.xmarket.utilities.PreferenceManager
 import com.example.xmarket.viewmodles.ApiViewModel
+import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.gson.Gson
 
 
@@ -31,10 +33,12 @@ class HomeFragment : BaseFragment() ,ProductsListener{
     private lateinit var productsLayout : ConstraintLayout
     private lateinit var progressBar: ProgressBar
     private lateinit var nestedScrollView:NestedScrollView
+    private lateinit var collapsingToolbarLayout: CollapsingToolbarLayout
     private var data : ProductsModel? = null
     private lateinit var logoutImage: ImageView
-    private var canStart :Boolean =true
     private val apiViewModel: ApiViewModel by viewModels()
+    private lateinit var preferenceManager: PreferenceManager
+    private var canStart :Boolean =true
     private var position = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +49,7 @@ class HomeFragment : BaseFragment() ,ProductsListener{
     }
     override fun init() {
 
+        collapsingToolbarLayout.title = "hi, ${preferenceManager.getString(KEY_USER_NAME)!!.split(" ")[0]}"
         if(data == null){
             getData()
         }else{
@@ -113,11 +118,14 @@ class HomeFragment : BaseFragment() ,ProductsListener{
     }
 
     override fun initViews(view: View) {
+        preferenceManager = PreferenceManager(requireActivity())
         productsRecycler=view.findViewById(R.id.products_recycler)
         progressBar = view.findViewById(R.id.progress_bar)
         productsLayout = view.findViewById(R.id.products_layout)
         logoutImage = view.findViewById(R.id.logout)
         nestedScrollView = view.findViewById(R.id.nestedScrollView)
+        collapsingToolbarLayout=view.findViewById(R.id.collapsing_toolbar)
+
     }
 
     override fun getViewId(): Int = R.layout.fragment_home

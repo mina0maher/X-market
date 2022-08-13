@@ -14,6 +14,7 @@ import com.example.xmarket.R
 import com.example.xmarket.models.UserSignInModel
 import com.example.xmarket.utilities.Constants
 import com.example.xmarket.utilities.Constants.KEY_IS_LOGIN_CLICKED
+import com.example.xmarket.utilities.Constants.KEY_USER_NAME
 import com.example.xmarket.utilities.Constants.isOnline
 import com.example.xmarket.utilities.Constants.showToast
 import com.example.xmarket.utilities.PreferenceManager
@@ -48,14 +49,20 @@ class LoginFragment : BaseFragment() {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        if(savedInstanceState!=null){
-            isLoginClicked = savedInstanceState.getBoolean(KEY_IS_LOGIN_CLICKED)
-        }
+
+
+
+    override fun initViews(view: View) {
+        preferenceManager = PreferenceManager(requireActivity())
+
+        buttonSignIn = view.findViewById(R.id.buttonSignIn)
+        inputEmail = view.findViewById(R.id.inputEmail)
+        inputPassword = view.findViewById(R.id.inputPassword)
+        progressBar = view.findViewById(R.id.progressBar)
+        textCreateNewAccount=view.findViewById(R.id.textCreateNewAccount)
     }
 
-
+    override fun getViewId(): Int =R.layout.fragment_login
 
 
 
@@ -63,7 +70,10 @@ class LoginFragment : BaseFragment() {
     private fun signIn(){
         if(isOnline(requireActivity())){
             isLoginClicked = true
-        apiViewModel.signIn(UserSignInModel(inputEmail.text.toString(),inputPassword.text.toString()))
+
+
+
+            apiViewModel.signIn(UserSignInModel(inputEmail.text.toString(),inputPassword.text.toString()))
             apiViewModel.codesLiveData.observe(requireActivity()) {
                 when (it) {
                     200 -> {
@@ -88,10 +98,14 @@ class LoginFragment : BaseFragment() {
                     }
                 }
             }
-        apiViewModel.errorMessageLiveData.observe(requireActivity()) {
-            showToast(it,requireContext())
-            loading(false)
-        }
+            apiViewModel.errorMessageLiveData.observe(requireActivity()) {
+                showToast(it,requireContext())
+                loading(false)
+            }
+            apiViewModel.bodyLiveData.observe(requireActivity()){
+                preferenceManager.putString(KEY_USER_NAME, it.data.name)
+
+            }
         }else{
             val builder = AlertDialog.Builder(requireActivity())
             builder.setTitle("Error")
@@ -115,27 +129,6 @@ class LoginFragment : BaseFragment() {
 
 
     }
-
-    override fun initViews(view: View) {
-        preferenceManager = PreferenceManager(requireActivity())
-
-        buttonSignIn = view.findViewById(R.id.buttonSignIn)
-        inputEmail = view.findViewById(R.id.inputEmail)
-        inputPassword = view.findViewById(R.id.inputPassword)
-        progressBar = view.findViewById(R.id.progressBar)
-        textCreateNewAccount=view.findViewById(R.id.textCreateNewAccount)
-    }
-
-    override fun getViewId(): Int =R.layout.fragment_login
-
-    override fun onDestroy() {
-        super.onDestroy()
-        inputEmail.setText("")
-        inputPassword.setText("")
-        apiViewModel.codesLiveData.removeObservers(requireActivity())
-        apiViewModel.errorMessageLiveData.removeObservers(requireActivity())
-    }
-
     private fun isValidSignInDetails():Boolean
     {
         return if (inputEmail.text.toString().trim().isEmpty()) {
@@ -166,5 +159,19 @@ class LoginFragment : BaseFragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean(KEY_IS_LOGIN_CLICKED,isLoginClicked)
+    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if(savedInstanceState!=null){
+            isLoginClicked = savedInstanceState.getBoolean(KEY_IS_LOGIN_CLICKED)
+        }
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        inputEmail.setText("")
+        inputPassword.setText("")
+        apiViewModel.codesLiveData.removeObservers(requireActivity())
+        apiViewModel.errorMessageLiveData.removeObservers(requireActivity())
+        apiViewModel.bodyLiveData.removeObservers (requireActivity())
     }
 }

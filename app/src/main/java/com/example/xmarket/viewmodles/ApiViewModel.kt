@@ -30,9 +30,9 @@ class ApiViewModel : ViewModel() {
     val errorMessageLiveData:LiveData<String>
         get() = errorMessageMD
 
-    var signInBodyMD: SingleLiveEvent<SignUpResponseModel> = SingleLiveEvent()
-    val signInBodyLiveData:LiveData<SignUpResponseModel>
-        get() = signInBodyMD
+    var signUpBodyMD: SingleLiveEvent<SignUpResponseModel> = SingleLiveEvent()
+    val signUpBodyLiveData:LiveData<SignUpResponseModel>
+        get() = signUpBodyMD
 
     fun signIn(userSignInModel: UserSignInModel){
          RetrofitFactory.apiInterface().logIn(userSignInModel)
@@ -85,7 +85,7 @@ class ApiViewModel : ViewModel() {
                     response: Response<SignUpResponseModel>
                 ) {
                     codesMD.postValue(response.code())
-                    signInBodyMD.postValue(response.body())
+                    signUpBodyMD.postValue(response.body())
                 }
                 override fun onFailure(call: Call<SignUpResponseModel>, t: Throwable) {
                     errorMessageMD.postValue(t.message.toString())
