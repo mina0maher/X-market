@@ -70,7 +70,7 @@ class LoginFragment : BaseFragment() {
     private fun signIn(){
         if(isOnline(requireActivity())){
             isLoginClicked = true
-
+            loading(true)
 
 
             apiViewModel.signIn(UserSignInModel(inputEmail.text.toString(),inputPassword.text.toString()))

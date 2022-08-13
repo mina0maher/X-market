@@ -64,7 +64,7 @@ class RegisterFragment : BaseFragment() {
     private fun signUp(){
         if(Constants.isOnline(requireActivity())){
             isSignUpClicked = true
-
+            loading(true)
 
 
             apiViewModel.signUp(UserSignUpModel(inputName.text.toString(),inputEmail.text.toString(),inputPassword.text.toString()))

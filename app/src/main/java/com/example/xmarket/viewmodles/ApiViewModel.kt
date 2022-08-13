@@ -42,7 +42,9 @@ class ApiViewModel : ViewModel() {
                 response: Response<SignInResponseModel>
             ) {
                 codesMD.postValue(response.code())
-                bodyMD.postValue(response.body())
+                if(response.code()==200) {
+                    bodyMD.postValue(response.body())
+                }
             }
             override fun onFailure(call: Call<SignInResponseModel>, t: Throwable) {
                 errorMessageMD.postValue(t.message.toString())
@@ -85,7 +87,9 @@ class ApiViewModel : ViewModel() {
                     response: Response<SignUpResponseModel>
                 ) {
                     codesMD.postValue(response.code())
-                    signUpBodyMD.postValue(response.body())
+                    if(response.code()==200){
+                        signUpBodyMD.postValue(response.body())
+                    }
                 }
                 override fun onFailure(call: Call<SignUpResponseModel>, t: Throwable) {
                     errorMessageMD.postValue(t.message.toString())
