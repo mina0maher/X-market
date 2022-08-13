@@ -19,7 +19,6 @@ import com.example.xmarket.models.ProductsModel
 import com.example.xmarket.utilities.Constants.KEY_HOME_SAVED_INSTANCE
 import com.example.xmarket.utilities.Constants.KEY_RECYCLER_SAVED_INSTANCE
 import com.example.xmarket.utilities.Constants.isOnline
-import com.example.xmarket.utilities.Constants.showToast
 import com.example.xmarket.utilities.PreferenceManager
 import com.example.xmarket.viewmodles.ApiViewModel
 import com.google.gson.Gson
